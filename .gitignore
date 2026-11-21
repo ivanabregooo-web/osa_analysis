@@ -1,0 +1,35 @@
+# jupyter checkpoints
+.ipynb_checkpoints/
+
+# python cache y files temporales
+__pycache__/
+*.py[cod]
+*$py.class
+
+# entornos
+env/
+venv/
+.venv/
+.env
+
+# basura
+.DS_Store
+Thumbs.db
+*.egg-info/
+
+# datos
+*.csv
+*.parquet
+data/
+*.json
+*.sqlite
+*.log
+
+# reportes de pytest
+htmlcov/
+.pytest_cache/
+.coverage
+
+# ruff y mypy
+.mypy_cache/
+.ruff_cache/
