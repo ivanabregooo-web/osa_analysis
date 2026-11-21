@@ -1,0 +1,77 @@
+name: CI - OSA Epidemiology Pipeline
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.jpg'
+      - '**.png'
+      - '.gitignore'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.jpg'
+      - '**.png'
+      - '.gitignore'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install locked dependencies and package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.lock
+          pip install --no-build-isolation --no-deps -e .
+
+      - name: Run Ruff lint and format checks
+        run: |
+          ruff check src tests
+          ruff format --check src tests
+
+      - name: Run Pytest with coverage
+        run: pytest tests --cov=osa_epi --cov-report=term-missing
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image name
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=ghcr.io/$REPO_LOWER/osa-epi" >> $GITHUB_ENV
+
+      - name: Extract package version
+        run: |
+          VERSION=$(grep '^version =' pyproject.toml | awk -F'"' '{print $2}')
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:${{ env.APP_VERSION }}
+          docker push ${{ env.IMAGE_NAME }}:${{ env.APP_VERSION }}
+          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
