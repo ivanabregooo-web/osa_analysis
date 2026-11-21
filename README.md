@@ -1,6 +1,8 @@
-# osa-epi
+# `osa-epi`: Reproducible OMOP CDM Epidemiological Study of Obstructive Sleep Apnea Syndrome
 
-Reproducible OMOP CDM epidemiological pipeline for Obstructive Sleep Apnea Syndrome (OSA).
+[![CI - OSA Epidemiology Pipeline](https://github.com/ivanabregooo-web/osa_analysis/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ivanabregooo-web/osa_analysis/actions/workflows/ci.yml)
+
+`osa-epi` is an end-to-end, containerized observational research pipeline built on the **OMOP Common Data Model (CDM)** and **PostgreSQL**
 
 A continucacion se detallan las opciones para reproducir el analisis.
 
